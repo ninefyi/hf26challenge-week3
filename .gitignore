@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.DS_Store
+# real chat exports and everything derived from them stay local
+inbox/
+work/
+digest/
+results/

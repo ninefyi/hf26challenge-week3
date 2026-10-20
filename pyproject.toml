@@ -1,0 +1,16 @@
+[project]
+name = "nightshift"
+version = "0.1.0"
+description = "Overnight local digest of a LINE chat export with a local Gemma, resumable and quote-checked"
+requires-python = ">=3.13"
+dependencies = [
+    "gradio>=6.29.1",
+    "ollama>=0.6.3",
+]
+
+[dependency-groups]
+dev = ["pytest>=8"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

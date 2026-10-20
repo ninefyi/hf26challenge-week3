@@ -1,4 +1,8 @@
-"""Render finished chunk results as a Markdown digest, honouring the review file."""
+"""Render finished chunk results as a Markdown digest, honouring the review file.
+
+The review file holds the author's verdict per item (keep / edit / wrong), reworded
+text for edited items, and whether the digest is confirmed. Wrong items are left out.
+"""
 import json
 from pathlib import Path
 
@@ -14,7 +18,11 @@ def load_review(work_dir: str | Path) -> dict:
     p = Path(work_dir) / REVIEW_FILE
     if p.exists():
         return json.loads(p.read_text(encoding="utf-8"))
-    return {"rejected": [], "confirmed": False}
+    return empty_review()
+
+
+def empty_review() -> dict:
+    return {"verdicts": {}, "edits": {}, "confirmed": False}
 
 
 def save_review(work_dir: str | Path, review: dict) -> None:
@@ -24,15 +32,17 @@ def save_review(work_dir: str | Path, review: dict) -> None:
 
 
 def render(results: list[dict], review: dict | None = None) -> str:
-    review = review or {"rejected": [], "confirmed": False}
-    rejected = set(review["rejected"])
+    review = review or empty_review()
+    rejected = {k for k, v in review["verdicts"].items() if v == "wrong"}
     status = "Reviewed" if review["confirmed"] else "Draft, not yet reviewed"
     lines = [f"# Chat digest ({status})", ""]
     by_day: dict[str, list[tuple[str, dict]]] = {}
     for r in results:
         for i, it in enumerate(r["items"]):
-            if item_key(r["id"], i) not in rejected:
-                by_day.setdefault(r["day"], []).append((r["id"], it))
+            key = item_key(r["id"], i)
+            if key not in rejected:
+                text = review["edits"].get(key) or it["text"]
+                by_day.setdefault(r["day"], []).append((r["id"], {**it, "text": text}))
     if not by_day:
         lines.append("Nothing to report.")
     for day in sorted(by_day):

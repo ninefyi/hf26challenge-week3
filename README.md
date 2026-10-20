@@ -4,7 +4,7 @@ Drop a LINE chat export in before bed. A local open model ([Gemma 3 12B](https:/
 
 Built for the [Hacktoberfest Open-Source AI Challenge: Week 3, "Slow and Steady"](https://dev.to/challenges/hacktoberfest-week3-2026-10-19).
 
-**Status: work in progress.** The code and tests are in place; the real night run and its evaluation (see [EVAL.md](EVAL.md)) have not been done yet, so there are no accuracy numbers here.
+**Status: work in progress.** The code, the review page and the tests are in place; the real night run and its evaluation (see [EVAL.md](EVAL.md)) have not been done yet, so there are no accuracy numbers here.
 
 ## How it works
 
@@ -32,6 +32,14 @@ uv run python run.py demo/demo_chat.txt --until 06:30
 
 Your own chat: use LINE's "Export chat history" on the group, and save the `.txt` into `inbox/` (git-ignored). Then `uv run python run.py inbox/<file>.txt --until 06:30`. Re-run the same command to resume. Useful flags: `--max-chunks N`, `--work DIR`, `--out FILE`.
 
+## Review the digest
+
+```bash
+uv run python app.py          # http://127.0.0.1:7861
+```
+
+Pick a day and read each item beside the quote it came from. Give every item a verdict: **keep** (right as written), **edit** (right, but reword it: change the text and the item becomes "edit"), or **wrong** (false or misleading even though the quote exists; it is left out of the digest). Every click is saved at once to `work/review.json`, so closing the browser loses nothing. The top of the page keeps a running tally against the bar in [EVAL.md](EVAL.md): keep rate, wrong rate, items dropped by the quote check, and model time. "Confirm digest" is allowed only when every item has a verdict. It writes `digest/digest.md` marked "Reviewed". Any later change reopens the review.
+
 `demo/demo_chat.txt` is a fabricated Thai group chat about a trip. Nobody in it is real.
 
 ## Export format
@@ -44,7 +52,7 @@ The standard LINE text export: a date header (`2026.10.19 Monday`, also `2026/10
 uv run pytest
 ```
 
-Covers the parser, chunking, the quote check, the resumable queue (resume, stop time, failures) and the digest. They use a fake model, so they need no Ollama.
+Covers the parser, chunking, the quote check, the resumable queue (resume, stop time, failures), the digest and the review logic (verdicts, edits, confirm, tally). They use a fake model, so they need no Ollama.
 
 ## Layout
 
@@ -56,6 +64,8 @@ nightshift/summarise.py  Gemma call, JSON items, retries
 nightshift/verify.py   the quote check
 nightshift/queue.py    resumable job queue
 nightshift/digest.py   Markdown digest and review file
+nightshift/review.py   verdicts, edits, confirm and the tally (no Gradio)
+app.py                 Gradio review page
 EVAL.md                the bar, written before any real run
 CONTEXT.md             glossary and flagged ambiguities
 ```

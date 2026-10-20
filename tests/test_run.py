@@ -122,8 +122,16 @@ def test_render_groups_by_kind_and_marks_draft():
 
 
 def test_render_hides_rejected_items_and_shows_reviewed():
-    md = render(RESULTS, {"rejected": [item_key("2026-10-01-01", 1)], "confirmed": True})
+    review = {"verdicts": {item_key("2026-10-01-01", 1): "wrong"}, "edits": {}, "confirmed": True}
+    md = render(RESULTS, review)
     assert "Who drives?" not in md and "Go on the 28th" in md and "(Reviewed)" in md
+
+
+def test_render_uses_edited_text():
+    review = {"verdicts": {item_key("2026-10-01-01", 0): "edit"},
+              "edits": {item_key("2026-10-01-01", 0): "We go on the 28th and 29th"}, "confirmed": False}
+    md = render(RESULTS, review)
+    assert "We go on the 28th and 29th" in md and "Go on the 28th" not in md
 
 
 def test_render_empty():

@@ -28,9 +28,11 @@ You need [uv](https://docs.astral.sh/uv/), Ollama, and about 8 GB of free memory
 
 ```bash
 ollama pull gemma3:12b
-uv sync
+uv sync                       # .python-version pins Python 3.13; uv downloads it if needed
 uv run python run.py demo/demo_chat.txt --until 06:30
 ```
+
+If `uv sync` fails building `orjson` ("does not support free-threaded Python"), uv picked a free-threaded 3.14t. Run `rm -rf .venv && uv sync --python 3.13`.
 
 Your own chat: use LINE's "Export chat history" on the group, and save the `.txt` into `inbox/` (git-ignored). Then `uv run python run.py inbox/<file>.txt --until 06:30`. Re-run the same command to resume. Useful flags: `--max-chunks N`, `--work DIR`, `--out FILE`.
 

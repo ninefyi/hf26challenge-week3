@@ -77,7 +77,7 @@ def test_placeholders_are_not_redacted_again():
 def test_counts_never_contain_the_secret():
     _, counts = redact_text("voucher Mn4v8Rt29jHc6LsB and 0812345678 and dan@x.com")
     assert dict(counts) == {"email": 1, "phone": 1, "code": 1}
-    assert "Kd8f3" not in summary(counts)
+    assert "Mn4v8" not in summary(counts)
 
 
 def msg(sender, text):
@@ -108,11 +108,11 @@ def test_chunks_and_work_files_hold_only_redacted_text(tmp_path):
     raw = "2026.10.01 Thursday\n09:00 Dan voucher Mn4v8Rt29jHc6LsB จาก dan@x.com\n09:01 Dan ขอบคุณครับ\n"
     msgs, _ = redact_messages(parse_export(raw))
     chunks = chunk_messages(msgs)
-    assert "Kd8f3" not in chunks[0].text and "dan@x.com" not in chunks[0].text
+    assert "Mn4v8" not in chunks[0].text and "dan@x.com" not in chunks[0].text
     q = Queue(tmp_path)
     run(chunks, lambda c: {"id": c.id, "day": c.day, "items": [], "dropped": [], "seconds": 0},
         q, log=lambda *_: None)
-    assert "Kd8f3" not in json.dumps(q.load_all())
+    assert "Mn4v8" not in json.dumps(q.load_all())
 
 
 def test_result_from_different_text_is_stale_and_redone(tmp_path):

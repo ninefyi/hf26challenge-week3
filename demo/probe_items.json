@@ -1,0 +1,222 @@
+[
+ {
+  "id": "c1",
+  "day": "2026-10-17",
+  "kind": "decision",
+  "text": "ตกลงไปเที่ยวเชียงใหม่วันที่ 28 ถึง 29 พฤศจิกายน",
+  "quote": "ตกลงวันที่ 28 ถึง 29 พฤศจิกายน",
+  "expected": "supported",
+  "label": "control",
+  "note": ""
+ },
+ {
+  "id": "c2",
+  "day": "2026-10-17",
+  "kind": "decision",
+  "text": "เลือกเช่าบ้านทั้งหลัง ราคา 3,500 บาท",
+  "quote": "เลือกบ้านทั้งหลังเลย",
+  "expected": "supported",
+  "label": "control",
+  "note": ""
+ },
+ {
+  "id": "c3",
+  "day": "2026-10-17",
+  "kind": "point",
+  "text": "ต้นขับรถได้ แต่ขอให้ทุกคนช่วยหารค่าน้ำมัน",
+  "quote": "ผมขับได้",
+  "expected": "supported",
+  "label": "control",
+  "note": ""
+ },
+ {
+  "id": "c4",
+  "day": "2026-10-18",
+  "kind": "point",
+  "text": "ต้นแพ้กุ้ง",
+  "quote": "ผมแพ้กุ้ง",
+  "expected": "supported",
+  "label": "control",
+  "note": ""
+ },
+ {
+  "id": "c5",
+  "day": "2026-10-18",
+  "kind": "question",
+  "text": "ยังไม่มีใครตอบเรื่องแผนเที่ยววันแรก",
+  "quote": "ยังไม่มีใครตอบเลย",
+  "expected": "supported",
+  "label": "control",
+  "note": ""
+ },
+ {
+  "id": "c6",
+  "day": "2026-10-19",
+  "kind": "point",
+  "text": "แพรจองบ้านแล้ว มัดจำ 1,000 บาท ให้โอนคนละ 334 บาท",
+  "quote": "จองบ้านเรียบร้อยแล้ว",
+  "expected": "supported",
+  "label": "control",
+  "note": ""
+ },
+ {
+  "id": "c7",
+  "day": "2026-10-19",
+  "kind": "question",
+  "text": "ต้นขอเลื่อนเวลาออกเดินทางเป็น 7 โมงเช้า ยังไม่มีใครตอบ",
+  "quote": "ขอเลื่อนเวลาออกเดินทางเป็น 7 โมงเช้า",
+  "expected": "supported",
+  "label": "control",
+  "note": ""
+ },
+ {
+  "id": "w1",
+  "day": "2026-10-17",
+  "kind": "decision",
+  "text": "ตกลงไปเที่ยวเชียงใหม่วันที่ 28 ถึง 30 พฤศจิกายน",
+  "quote": "ตกลงวันที่ 28 ถึง 29 พฤศจิกายน",
+  "expected": "unsupported",
+  "label": "wrong_number",
+  "note": ""
+ },
+ {
+  "id": "w2",
+  "day": "2026-10-17",
+  "kind": "decision",
+  "text": "เลือกเช่าบ้านทั้งหลัง ราคา 3,000 บาท",
+  "quote": "เลือกบ้านทั้งหลังเลย",
+  "expected": "unsupported",
+  "label": "wrong_number",
+  "note": ""
+ },
+ {
+  "id": "w3",
+  "day": "2026-10-18",
+  "kind": "point",
+  "text": "มีคนแพ้อาหาร 3 คน",
+  "quote": "ใครแพ้อะไรไหม",
+  "expected": "unsupported",
+  "label": "wrong_number",
+  "note": ""
+ },
+ {
+  "id": "w4",
+  "day": "2026-10-19",
+  "kind": "point",
+  "text": "นัดออกเดินทาง 8 โมงเช้า",
+  "quote": "ขอเลื่อนเวลาออกเดินทาง",
+  "expected": "unsupported",
+  "label": "wrong_number",
+  "note": ""
+ },
+ {
+  "id": "w5",
+  "day": "2026-10-17",
+  "kind": "decision",
+  "text": "ตกลงไปเที่ยวเชียงใหม่วันที่ 21 พฤศจิกายน",
+  "quote": "วันที่ 21 พฤศจิกายนติดงานแต่งเพื่อน",
+  "expected": "unsupported",
+  "label": "reused_number",
+  "note": "21 is the day Mai is busy, not the trip date"
+ },
+ {
+  "id": "w6",
+  "day": "2026-10-17",
+  "kind": "decision",
+  "text": "เลือกเช่าแบบห้องละ 1,200 บาท",
+  "quote": "เลือกบ้านทั้งหลังเลย",
+  "expected": "unsupported",
+  "label": "reused_number",
+  "note": "the group chose the whole house, not rooms"
+ },
+ {
+  "id": "w7",
+  "day": "2026-10-19",
+  "kind": "point",
+  "text": "แพรจองบ้านแล้ว มัดจำ 334 บาท ให้โอนคนละ 1,000 บาท",
+  "quote": "จองบ้านเรียบร้อยแล้ว",
+  "expected": "unsupported",
+  "label": "reused_number",
+  "note": "deposit and per-person amounts swapped"
+ },
+ {
+  "id": "w8",
+  "day": "2026-10-17",
+  "kind": "point",
+  "text": "มายเป็นคนขับรถ",
+  "quote": "ผมขับได้",
+  "expected": "unsupported",
+  "label": "wrong_person",
+  "note": "Ton said it, not Mai"
+ },
+ {
+  "id": "w9",
+  "day": "2026-10-18",
+  "kind": "point",
+  "text": "มายแพ้กุ้ง",
+  "quote": "ผมแพ้กุ้ง",
+  "expected": "unsupported",
+  "label": "wrong_person",
+  "note": "Ton said it, not Mai"
+ },
+ {
+  "id": "w10",
+  "day": "2026-10-17",
+  "kind": "point",
+  "text": "บ้านที่เลือกอยู่ติดแม่น้ำปิง",
+  "quote": "บ้านทั้งหลังคุ้มกว่านะ",
+  "expected": "unsupported",
+  "label": "invented_detail",
+  "note": "the chat never says where the house is"
+ },
+ {
+  "id": "w11",
+  "day": "2026-10-19",
+  "kind": "point",
+  "text": "ทุกคนโอนเงินมัดจำครบแล้ว",
+  "quote": "โอนแล้วนะ",
+  "expected": "unsupported",
+  "label": "overclaim",
+  "note": "only Ton had paid; Mai said she would later"
+ },
+ {
+  "id": "w12",
+  "day": "2026-10-17",
+  "kind": "decision",
+  "text": "ทุกคนตกลงหารค่าน้ำมันเท่า ๆ กันแล้ว",
+  "quote": "ช่วยค่าน้ำมันหารกัน",
+  "expected": "unsupported",
+  "label": "not_agreed",
+  "note": "Ton asked; nobody replied"
+ },
+ {
+  "id": "w13",
+  "day": "2026-10-18",
+  "kind": "decision",
+  "text": "ตกลงจะไปกินร้านที่แพรส่งรูปมา",
+  "quote": "ไว้ไปลองกัน",
+  "expected": "unsupported",
+  "label": "not_agreed",
+  "note": "Prae suggested it; nobody agreed"
+ },
+ {
+  "id": "w14",
+  "day": "2026-10-19",
+  "kind": "decision",
+  "text": "ตกลงเลื่อนเวลาออกเดินทางเป็น 7 โมงเช้าแล้ว",
+  "quote": "ขอเลื่อนเวลาออกเดินทางเป็น 7 โมงเช้า",
+  "expected": "unsupported",
+  "label": "not_agreed",
+  "note": "it was a request, still unanswered"
+ },
+ {
+  "id": "w15",
+  "day": "2026-10-17",
+  "kind": "question",
+  "text": "ยังไม่มีใครตอบว่าใครจะขับรถ",
+  "quote": "แล้วใครจะขับรถ",
+  "expected": "unsupported",
+  "label": "answered_later",
+  "note": "Ton answers a few lines later"
+ }
+]

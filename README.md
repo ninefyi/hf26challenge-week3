@@ -36,6 +36,16 @@ If `uv sync` fails building `orjson` ("does not support free-threaded Python"), 
 
 Your own chat: use LINE's "Export chat history" on the group, and save the `.txt` into `inbox/` (git-ignored). Then `uv run python run.py inbox/<file>.txt --until 06:30`. Re-run the same command to resume. Useful flags: `--max-chunks N`, `--work DIR`, `--out FILE`.
 
+## Does the second pass actually work?
+
+On a real run, "0 flagged" cannot tell a model that found nothing wrong from one that cannot find anything. `probe.py` answers that with planted errors:
+
+```bash
+uv run python probe.py          # Ollama running; takes a few minutes
+```
+
+It feeds the second pass 22 items made from the fabricated demo chat: 7 correct ones and 15 wrong on purpose (a number not in the chat, a number from the chat used in the wrong place, the wrong person, an invented detail, an overclaim, something never agreed, a question that was answered later). It prints how many wrong items were flagged, how many of those the number check caught without a model, how many needed the model's re-read, and whether any correct item was flagged by mistake. Full rows go to `results/probe.json`. Tests check that every probe's quote is really in the chat and that each probe's label says how it can be caught. These are 22 fabricated probes, a sanity check and not a benchmark.
+
 ## Review the digest
 
 ```bash
@@ -87,6 +97,7 @@ nightshift/chunk.py    messages -> one chunk per day
 nightshift/summarise.py  Gemma call, JSON items, retries
 nightshift/verify.py   the quote check
 nightshift/recheck.py  the second pass (numbers, then a model re-read)
+nightshift/probe.py    planted-error test for the second pass (run with probe.py)
 nightshift/queue.py    resumable job queue
 nightshift/redact.py   removes secrets and names before the model sees anything
 nightshift/digest.py   Markdown digest and review file

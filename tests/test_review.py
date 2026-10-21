@@ -1,5 +1,5 @@
 from nightshift.digest import load_review, render
-from nightshift.review import confirm, items_for_review, set_text, set_verdict, tally
+from nightshift.review import confirm, items_for_review, set_text, set_verdict, tally, unjudged_by_day
 
 RESULTS = [
     {"id": "2026-10-01-01", "day": "2026-10-01", "seconds": 10.0, "dropped": [{"quote": "x"}], "items": [
@@ -62,3 +62,12 @@ def test_confirm_needs_every_item_judged_and_any_change_reopens(tmp_path):
     assert load_review(tmp_path)["confirmed"] is True
     set_verdict(tmp_path, K2, "edit")
     assert load_review(tmp_path)["confirmed"] is False
+
+
+def test_unjudged_by_day_lists_only_days_with_items_left(tmp_path):
+    assert unjudged_by_day(RESULTS, None) == {"2026-10-01": 2, "2026-10-02": 1}
+    set_verdict(tmp_path, K0, "keep")
+    set_verdict(tmp_path, K2, "wrong")
+    assert unjudged_by_day(RESULTS, load_review(tmp_path)) == {"2026-10-01": 1}
+    set_verdict(tmp_path, K1, "edit")
+    assert unjudged_by_day(RESULTS, load_review(tmp_path)) == {}

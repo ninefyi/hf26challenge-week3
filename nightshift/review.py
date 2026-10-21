@@ -41,6 +41,16 @@ def set_text(work_dir, key: str, original: str, text: str) -> None:
     save_review(work_dir, review)
 
 
+def unjudged_by_day(results: list[dict], review: dict | None = None) -> dict[str, int]:
+    """Days that still have items without a verdict, with how many (the page shows one day at a time)."""
+    review = review or empty_review()
+    out: dict[str, int] = {}
+    for it in items_for_review(results):
+        if it["key"] not in review["verdicts"]:
+            out[it["day"]] = out.get(it["day"], 0) + 1
+    return dict(sorted(out.items()))
+
+
 def tally(results: list[dict], review: dict | None = None) -> dict:
     """Counts for the evaluation. Rates are over judged items; None until something is judged."""
     review = review or empty_review()

@@ -10,7 +10,7 @@ import gradio as gr
 
 from nightshift.digest import load_review, render
 from nightshift.queue import Queue
-from nightshift.review import VERDICTS, confirm, items_for_review, set_text, set_verdict, tally
+from nightshift.review import VERDICTS, confirm, items_for_review, set_text, set_verdict, tally, unjudged_by_day
 
 KIND_LABEL = {"decision": "Decision", "question": "Open question", "point": "Point"}
 
@@ -29,10 +29,15 @@ def build(work: str, out: str):
         )
 
     def stats_md() -> str:
-        t = tally(queue.load_all(), load_review(work))
+        results, review = queue.load_all(), load_review(work)
+        t = tally(results, review)
+        left = unjudged_by_day(results, review)
+        todo = ("**Still to judge** (pick the day in the Day box): "
+                + ", ".join(f"{d} ({n})" for d, n in left.items()) + "  \n") if left else ""
         rate = lambda x: "n/a" if x is None else f"{x:.0%}"
         return (
-            f"**{t['judged']} of {t['items']} items judged** "
+            todo
+            + f"**{t['judged']} of {t['items']} items judged** "
             f"(keep {t['keep']}, edit {t['edit']}, wrong {t['wrong']}) · "
             f"keep rate {rate(t['keep_rate'])} (bar ≥ 70%) · wrong rate {rate(t['wrong_rate'])} (bar ≤ 10%)  \n"
             f"{t['chunks']} chunks, {t['seconds']} s of model time · "

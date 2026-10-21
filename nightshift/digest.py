@@ -5,6 +5,7 @@ The review file holds the author's verdict per item (keep / edit / wrong), rewor
 text for edited items, and whether the digest is confirmed. Wrong items are left out.
 """
 import json
+import os
 from pathlib import Path
 
 HEADINGS = {"decision": "Decisions", "question": "Open questions", "point": "Points"}
@@ -27,9 +28,10 @@ def empty_review() -> dict:
 
 
 def save_review(work_dir: str | Path, review: dict) -> None:
-    (Path(work_dir) / REVIEW_FILE).write_text(
-        json.dumps(review, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
+    path = Path(work_dir) / REVIEW_FILE
+    tmp = path.with_suffix(".tmp")
+    tmp.write_text(json.dumps(review, ensure_ascii=False, indent=2), encoding="utf-8")
+    os.replace(tmp, path)  # a reader never sees a half-written file
 
 
 def render(results: list[dict], review: dict | None = None) -> str:

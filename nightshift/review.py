@@ -3,9 +3,25 @@
 Kept free of Gradio so it can be tested. Every change is written to the review file
 at once, so closing the browser loses nothing.
 """
+import functools
+import threading
+
 from .digest import empty_review, item_key, load_review, save_review
 
 VERDICTS = ("keep", "edit", "wrong")
+
+# Gradio runs every click in its own thread, and each change is read-modify-write of one file.
+# Without this lock two quick clicks can both read the old file and the last write wins.
+_LOCK = threading.RLock()
+
+
+def _locked(fn):
+    @functools.wraps(fn)
+    def wrapper(*args, **kwargs):
+        with _LOCK:
+            return fn(*args, **kwargs)
+
+    return wrapper
 
 
 def items_for_review(results: list[dict]) -> list[dict]:
@@ -17,6 +33,7 @@ def items_for_review(results: list[dict]) -> list[dict]:
     return out
 
 
+@_locked
 def set_verdict(work_dir, key: str, verdict: str | None) -> None:
     review = load_review(work_dir)
     if verdict in VERDICTS:
@@ -27,6 +44,7 @@ def set_verdict(work_dir, key: str, verdict: str | None) -> None:
     save_review(work_dir, review)
 
 
+@_locked
 def set_text(work_dir, key: str, original: str, text: str) -> None:
     """Store reworded text, or clear it when it is empty or unchanged. Marks the item 'edit'."""
     review = load_review(work_dir)
@@ -94,6 +112,7 @@ def tally(results: list[dict], review: dict | None = None) -> dict:
     }
 
 
+@_locked
 def confirm(work_dir, results: list[dict]) -> str:
     """Mark the digest reviewed. Refused while any item has no verdict. Returns a message."""
     t = tally(results, load_review(work_dir))

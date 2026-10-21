@@ -44,7 +44,7 @@ Pick a day and read each item beside the quote it came from. Give every item a v
 
 ## Export format
 
-The standard LINE text export: a date header (`2026.10.19 Monday`, also `2026/10/19`, `2026-10-19` or `Mon, 19/10/2026`), then `HH:MM<TAB>Sender<TAB>text` lines. Buddhist Era years (2569) are converted. Multi-line messages in quotes are joined. Stickers, photos and system lines are skipped. This was written from the documented layout and a fabricated sample, not yet checked against a full real export, so a different layout may need a parser change in `nightshift/parse.py`.
+The LINE text export in either layout. Date header: `2026.10.19 Monday` (also `2026/10/19`, `2026-10-19` or `Mon, 19/10/2026`). Messages: `HH:MM<TAB>Sender<TAB>text`, or `HH:MM Sender text` with spaces only. In the space layout nothing marks where the name ends, so names are inferred from the file (names with spaces or emoji work; a one-word name whose lines nearly all start with the same word may pick up that word). Buddhist Era years (2569) are converted. Multi-line messages are joined. Stickers, photos, join/leave lines and call notices are skipped. Checked against one real export (space layout) and fabricated samples; another app version or language may need a change in `nightshift/parse.py`.
 
 ## Tests
 

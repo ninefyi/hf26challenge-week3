@@ -8,6 +8,7 @@ import json
 import time
 
 from .chunk import Chunk
+from .recheck import check_items
 from .verify import split_items
 
 MODEL = "gemma3:12b"
@@ -50,14 +51,14 @@ Chat ({day}):
 """
 
 
-def ollama_llm(model: str = MODEL):
+def ollama_llm(model: str = MODEL, schema: dict = SCHEMA):
     import ollama
 
     def call(prompt: str) -> str:
         reply = ollama.chat(
             model=model,
             messages=[{"role": "user", "content": prompt}],
-            format=SCHEMA,
+            format=schema,
             options={"temperature": 0},
         )
         return reply["message"]["content"]
@@ -76,8 +77,11 @@ def _parse(raw: str) -> list[dict]:
     return items
 
 
-def summarise_chunk(chunk: Chunk, llm) -> dict:
-    """One chunk -> result dict. Raises if the model never returns usable JSON."""
+def summarise_chunk(chunk: Chunk, llm, check_llm=None) -> dict:
+    """One chunk -> result dict. Raises if the model never returns usable JSON.
+
+    With `check_llm`, every kept item also goes through the second pass (recheck.py).
+    """
     prompt = PROMPT.format(day=chunk.day, chat=chunk.text)
     started = time.monotonic()
     last: Exception | None = None
@@ -88,6 +92,9 @@ def summarise_chunk(chunk: Chunk, llm) -> dict:
             last = e
             continue
         kept, dropped = split_items(items, chunk.source)
+        verify_seconds = 0.0
+        if check_llm is not None:
+            kept, verify_seconds = check_items(chunk, kept, check_llm)
         return {
             "id": chunk.id,
             "day": chunk.day,
@@ -95,6 +102,8 @@ def summarise_chunk(chunk: Chunk, llm) -> dict:
             "items": kept,
             "dropped": dropped,
             "attempts": attempt,
+            "verified": check_llm is not None,
+            "verify_seconds": verify_seconds,
             "seconds": round(time.monotonic() - started, 1),
         }
     raise ValueError(f"no usable JSON for {chunk.id} after {RETRIES + 1} tries: {last}")

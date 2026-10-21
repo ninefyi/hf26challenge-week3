@@ -25,6 +25,9 @@ A few words the model copies from one Message to support an Item. If it is not i
 **Night run**:
 One unattended `run.py` pass over an Export, stopping at a set time. Can be repeated; finished Chunks are skipped.
 
+**Second pass**:
+A check after the Quote check: every number in an Item must appear in that day's Messages, then the model re-reads the day and calls each Item supported, unsupported or unclear. Unsupported Items are left out of the Digest unless the author keeps them. It is a filter and a measurement; the author's verdicts decide.
+
 **Digest**:
 The Markdown file of all kept Items by day. Marked "Draft, not yet reviewed" until the author confirms it.
 
@@ -39,5 +42,5 @@ The single DEV post, using the challenge template, tagged `devchallenge` and `hf
 
 ## Flagged ambiguities
 - "Slow" is the feature, not a limit: the laptop is idle at night, so a 12B model on a 16 GB machine is enough.
-- A valid Quote proves the words exist, not that the Item says something true about them. A misleading Item with a valid Quote still counts against the model in the Evaluation.
+- A valid Quote proves the words exist, not that the Item says something true about them. The Second pass tries to catch some of those; whether it does is measured against the author's verdicts, not assumed. A misleading Item with a valid Quote still counts against the model in the Evaluation.
 - The real chat has other people in it. Only the fabricated demo chat is committed or shown.

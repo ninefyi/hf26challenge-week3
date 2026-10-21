@@ -17,6 +17,7 @@ from nightshift.digest import load_review, render
 from nightshift.parse import parse_export
 from nightshift.queue import Queue, run
 from nightshift.redact import load_terms, redact_messages, summary
+from nightshift.recheck import SCHEMA as CHECK_SCHEMA
 from nightshift.summarise import MODEL, ollama_llm, summarise_chunk
 
 
@@ -35,6 +36,8 @@ def main() -> None:
     ap.add_argument("--until", metavar="HH:MM", help="stop starting new chunks at this time")
     ap.add_argument("--max-chunks", type=int)
     ap.add_argument("--model", default=MODEL)
+    ap.add_argument("--no-second-pass", action="store_true",
+                    help="skip the second pass that re-reads the chat to check each item (faster, less careful)")
     ap.add_argument("--terms", default="redact-terms.txt",
                     help="file of extra words to hide, one per line (default redact-terms.txt, if it exists)")
     ap.add_argument("--anonymise-senders", action="store_true", help="show senders as Person A, Person B, ...")
@@ -61,8 +64,11 @@ def main() -> None:
 
     queue = Queue(args.work)
     llm = ollama_llm(args.model)
+    check_llm = None if args.no_second_pass else ollama_llm(args.model, CHECK_SCHEMA)
+    salt = f":{args.model}:second-pass={'off' if check_llm is None else 'on'}"
     until = stop_time(args.until, datetime.now()) if args.until else None
-    report = run(chunks, lambda c: summarise_chunk(c, llm), queue, until=until, max_chunks=args.max_chunks)
+    report = run(chunks, lambda c: summarise_chunk(c, llm, check_llm), queue,
+                 until=until, max_chunks=args.max_chunks, salt=salt)
 
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)

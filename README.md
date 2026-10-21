@@ -12,12 +12,14 @@ Built for the [Hacktoberfest Open-Source AI Challenge: Week 3, "Slow and Steady"
 LINE .txt export ─► parse ─► one chunk per day ─► Gemma 3 12B (Ollama, local)
    ─► items: decision / question / point, each with a quote
    ─► quote check (drop any item whose quote is not in the chat)
+   ─► second pass: numbers must be in the chat, then Gemma re-reads the day and judges each item
    ─► work/<chunk>.json saved as each chunk finishes ─► digest/digest.md
 ```
 
 - **Slow on purpose.** `--until 06:30` stops starting new chunks at that time.
 - **Resumable.** Each finished chunk is written to `work/` right away. If the laptop sleeps, Ollama dies or you stop it, run the same command again and it picks up where it left off. After three chunks fail in a row it stops instead of burning the night.
 - **The model cannot make things up silently.** Every item carries a quote copied from one message. If the quote is not in that day's chat word for word (ignoring spaces, since Thai has none, and case), the item is dropped and counted.
+- **A second pass, because a quote is not enough.** For each item that survives the quote check, any number in it must appear in that day's chat (no model needed), then Gemma re-reads the whole day and answers *supported*, *unsupported* or *unclear* with a one-sentence reason. Items called unsupported are left out of the digest unless you keep them on the review page, so nothing is deleted behind your back. It costs about as many extra model calls as there are items, which is the point of running overnight. `--no-second-pass` turns it off.
 - **A valid quote is not a true item.** The digest is marked "Draft, not yet reviewed" until you check it.
 
 ## Run it
@@ -38,7 +40,7 @@ Your own chat: use LINE's "Export chat history" on the group, and save the `.txt
 uv run python app.py          # http://127.0.0.1:7861
 ```
 
-Pick a day and read each item beside the quote it came from. Give every item a verdict: **keep** (right as written), **edit** (right, but reword it: change the text and the item becomes "edit"), or **wrong** (false or misleading even though the quote exists; it is left out of the digest). Every click is saved at once to `work/review.json`, so closing the browser loses nothing. The top of the page keeps a running tally against the bar in [EVAL.md](EVAL.md): keep rate, wrong rate, items dropped by the quote check, and model time. "Confirm digest" is allowed only when every item has a verdict. It writes `digest/digest.md` marked "Reviewed". Any later change reopens the review.
+Pick a day and read each item beside the quote it came from. Give every item a verdict: **keep** (right as written), **edit** (right, but reword it: change the text and the item becomes "edit"), or **wrong** (false or misleading even though the quote exists; it is left out of the digest). Every click is saved at once to `work/review.json`, so closing the browser loses nothing. Each item shows what the second pass said about it. The top of the page keeps a running tally against the bar in [EVAL.md](EVAL.md): keep rate, wrong rate, items dropped by the quote check, model time, and how the second pass compares with your verdicts (right when it flagged an item you called wrong, a false alarm when it flagged one you kept, and how many wrong items it missed). "Confirm digest" is allowed only when every item has a verdict. It writes `digest/digest.md` marked "Reviewed". Any later change reopens the review.
 
 `demo/demo_chat.txt` is a fabricated Thai group chat about a trip. Nobody in it is real.
 
@@ -64,7 +66,7 @@ uv run python run.py inbox/chat.txt --preview work/preview.txt   # writes the re
 uv run python run.py inbox/chat.txt --anonymise-senders ...      # Person A, Person B, ... (optional)
 ```
 
-The run prints how many of each kind it replaced, never the text. **Read the preview before the real run**: this is a safety net, not a guarantee, and it cannot know that a Thai nickname is a person. If a chunk's text changes (for example you add a term), its old result is treated as stale and redone.
+The run prints how many of each kind it replaced, never the text. **Read the preview before the real run**: this is a safety net, not a guarantee, and it cannot know that a Thai nickname is a person. If a chunk's text changes (for example you add a term), or you change the model or turn the second pass on or off, its old result is treated as stale and redone.
 
 ## Tests
 
@@ -72,7 +74,7 @@ The run prints how many of each kind it replaced, never the text. **Read the pre
 uv run pytest
 ```
 
-Covers the parser, redaction, chunking, the quote check, the resumable queue (resume, stop time, failures), the digest and the review logic (verdicts, edits, confirm, tally). They use a fake model, so they need no Ollama.
+Covers the parser, redaction, chunking, the quote check, the second pass, the resumable queue (resume, stop time, failures), the digest and the review logic (verdicts, edits, confirm, tally). They use a fake model, so they need no Ollama.
 
 ## Layout
 
@@ -82,6 +84,7 @@ nightshift/parse.py    LINE export -> messages
 nightshift/chunk.py    messages -> one chunk per day
 nightshift/summarise.py  Gemma call, JSON items, retries
 nightshift/verify.py   the quote check
+nightshift/recheck.py  the second pass (numbers, then a model re-read)
 nightshift/queue.py    resumable job queue
 nightshift/redact.py   removes secrets and names before the model sees anything
 nightshift/digest.py   Markdown digest and review file

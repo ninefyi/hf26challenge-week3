@@ -58,12 +58,16 @@ class Report:
 
 
 def run(chunks: list[Chunk], summarise, queue: Queue, *, until: datetime | None = None,
-        max_chunks: int | None = None, now=datetime.now, log=print) -> Report:
-    """Work through the chunks in order. Finished ones are skipped, so re-running resumes."""
+        max_chunks: int | None = None, now=datetime.now, log=print, salt: str = "") -> Report:
+    """Work through the chunks in order. Finished ones are skipped, so re-running resumes.
+
+    `salt` describes the settings that shape a result (model, second pass on or off). A result
+    saved under a different salt counts as stale and is redone.
+    """
     report = Report()
     todo = []
     for c in chunks:
-        if queue.done(c.id, c.fingerprint):
+        if queue.done(c.id, c.fingerprint + salt):
             report.skipped += 1
         else:
             todo.append(c)
@@ -86,8 +90,11 @@ def run(chunks: list[Chunk], summarise, queue: Queue, *, until: datetime | None 
             log(f"FAILED {c.id}: {e}")
             continue
         consecutive = 0
-        result.setdefault("fingerprint", c.fingerprint)
+        result["fingerprint"] = c.fingerprint + salt
         queue.save(result)
         report.done += 1
-        log(f"done {c.id}: {len(result['items'])} items, {len(result['dropped'])} dropped, {result['seconds']}s")
+        flagged = sum(1 for it in result["items"] if it.get("check", {}).get("verdict") == "unsupported")
+        log(f"done {c.id}: {len(result['items'])} items, {len(result['dropped'])} dropped by quote check"
+            + (f", {flagged} flagged by second pass" if result.get("verified") else "")
+            + f", {result['seconds']}s")
     return report

@@ -1,5 +1,6 @@
 """Render finished chunk results as a Markdown digest, honouring the review file.
 
+Items the second pass called "unsupported" are left out unless the author keeps them.
 The review file holds the author's verdict per item (keep / edit / wrong), reworded
 text for edited items, and whether the digest is confirmed. Wrong items are left out.
 """
@@ -34,6 +35,11 @@ def save_review(work_dir: str | Path, review: dict) -> None:
 def render(results: list[dict], review: dict | None = None) -> str:
     review = review or empty_review()
     rejected = {k for k, v in review["verdicts"].items() if v == "wrong"}
+    for r in results:  # the second pass's "unsupported" holds unless the author keeps the item
+        for i, it in enumerate(r["items"]):
+            key = item_key(r["id"], i)
+            if it.get("check", {}).get("verdict") == "unsupported" and review["verdicts"].get(key) not in ("keep", "edit"):
+                rejected.add(key)
     status = "Reviewed" if review["confirmed"] else "Draft, not yet reviewed"
     lines = [f"# Chat digest ({status})", ""]
     by_day: dict[str, list[tuple[str, dict]]] = {}

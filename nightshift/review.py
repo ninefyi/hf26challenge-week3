@@ -51,6 +51,21 @@ def tally(results: list[dict], review: dict | None = None) -> dict:
         if v in counts:
             counts[v] += 1
     judged = sum(counts.values())
+    # Did the second pass agree with the author? Only items the author judged are compared.
+    sp = {"checked": 0, "flagged": 0, "flag_right": 0, "false_alarms": 0, "missed_wrong": 0}
+    for it in items:
+        verdict = (it.get("check") or {}).get("verdict")
+        if verdict is None:
+            continue
+        sp["checked"] += 1
+        sp["flagged"] += verdict == "unsupported"
+        author = review["verdicts"].get(it["key"])
+        if verdict == "unsupported" and author == "wrong":
+            sp["flag_right"] += 1
+        elif verdict == "unsupported" and author in ("keep", "edit"):
+            sp["false_alarms"] += 1
+        elif verdict != "unsupported" and author == "wrong":
+            sp["missed_wrong"] += 1
     dropped = sum(len(r["dropped"]) for r in results)
     total_model = len(items) + dropped
     return {
@@ -63,6 +78,8 @@ def tally(results: list[dict], review: dict | None = None) -> dict:
         "dropped_by_quote_check": dropped,
         "dropped_share": dropped / total_model if total_model else None,
         "seconds": round(sum(r.get("seconds", 0) for r in results), 1),
+        "verify_seconds": round(sum(r.get("verify_seconds", 0) for r in results), 1),
+        "second_pass": sp,
         "chunks": len(results),
     }
 

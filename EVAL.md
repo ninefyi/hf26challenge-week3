@@ -21,3 +21,6 @@ The author judges each kept Item against the chat: **keep** (right as written), 
 
 ## Reporting
 Report the real numbers even if they miss the bar, and say how many Items the claim rests on. Raw per-Chunk results stay in `work/` (git-ignored); only counts and fabricated examples are published.
+
+## Amendment (2026-10-21, before any real run)
+Added a second pass (a number check, then a model re-read of each item). The thresholds above are unchanged. Also record, with no threshold: how many items the second pass flagged, how many of those the author judged wrong (it was right) or keep/edit (false alarm), how many wrong items it missed, and the extra seconds it took. The author's verdicts stay the ground truth.

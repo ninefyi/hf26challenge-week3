@@ -18,6 +18,16 @@ KIND_LABEL = {"decision": "Decision", "question": "Open question", "point": "Poi
 def build(work: str, out: str):
     queue = Queue(work)
 
+    def second_pass_md(t: dict) -> str:
+        sp = t["second_pass"]
+        if not sp["checked"]:
+            return ""
+        return (
+            f"  \nSecond pass flagged {sp['flagged']} of {sp['checked']} items "
+            f"({t['verify_seconds']} s). Against your verdicts: it was right on {sp['flag_right']}, "
+            f"a false alarm on {sp['false_alarms']}, and missed {sp['missed_wrong']} wrong item(s)."
+        )
+
     def stats_md() -> str:
         t = tally(queue.load_all(), load_review(work))
         rate = lambda x: "n/a" if x is None else f"{x:.0%}"
@@ -27,6 +37,7 @@ def build(work: str, out: str):
             f"keep rate {rate(t['keep_rate'])} (bar ≥ 70%) · wrong rate {rate(t['wrong_rate'])} (bar ≤ 10%)  \n"
             f"{t['chunks']} chunks, {t['seconds']} s of model time · "
             f"{t['dropped_by_quote_check']} item(s) dropped by the quote check"
+            + second_pass_md(t)
         )
 
     def preview_md() -> str:
@@ -53,7 +64,9 @@ def build(work: str, out: str):
                 return
             for it in items:
                 with gr.Group():
-                    gr.Markdown(f"**{KIND_LABEL[it['kind']]}** · quote from the chat:  \n> {it['quote']}")
+                    chk = it.get("check")
+                    note = f"  \nSecond pass: **{chk['verdict']}**, {chk['reason']}" if chk else ""
+                    gr.Markdown(f"**{KIND_LABEL[it['kind']]}** · quote from the chat:  \n> {it['quote']}{note}")
                     box = gr.Textbox(
                         value=review["edits"].get(it["key"]) or it["text"], label="Item text", lines=2, interactive=True
                     )

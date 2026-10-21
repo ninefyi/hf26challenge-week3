@@ -2,6 +2,11 @@
 
   uv run python run.py inbox/chat.txt --until 06:30
 Re-run the same command to resume after a stop or crash.
+
+Secrets (emails, links, phone numbers, long numbers, voucher-style codes) are replaced with
+placeholders before anything else sees the chat. Put names, clients and anything else to
+hide in redact-terms.txt (one per line), then check what the model will read with
+  uv run python run.py inbox/chat.txt --preview work/preview.txt
 """
 import argparse
 from datetime import datetime, timedelta
@@ -11,6 +16,7 @@ from nightshift.chunk import chunk_messages
 from nightshift.digest import load_review, render
 from nightshift.parse import parse_export
 from nightshift.queue import Queue, run
+from nightshift.redact import load_terms, redact_messages, summary
 from nightshift.summarise import MODEL, ollama_llm, summarise_chunk
 
 
@@ -29,12 +35,29 @@ def main() -> None:
     ap.add_argument("--until", metavar="HH:MM", help="stop starting new chunks at this time")
     ap.add_argument("--max-chunks", type=int)
     ap.add_argument("--model", default=MODEL)
+    ap.add_argument("--terms", default="redact-terms.txt",
+                    help="file of extra words to hide, one per line (default redact-terms.txt, if it exists)")
+    ap.add_argument("--anonymise-senders", action="store_true", help="show senders as Person A, Person B, ...")
+    ap.add_argument("--preview", metavar="FILE",
+                    help="write the redacted chat to FILE and stop, without running the model")
     args = ap.parse_args()
 
     raw = Path(args.export).read_text(encoding="utf-8")
     messages = parse_export(raw)
+    terms = load_terms(args.terms) if Path(args.terms).exists() else []
+    messages, redacted = redact_messages(messages, terms, args.anonymise_senders)
     chunks = chunk_messages(messages)
-    print(f"{len(messages)} messages, {len(chunks)} chunks")
+    print(f"{len(messages)} messages, {len(chunks)} chunks; redacted: {summary(redacted)} "
+          f"({len(terms)} custom terms)")
+
+    if args.preview:
+        preview = Path(args.preview)
+        preview.parent.mkdir(parents=True, exist_ok=True)
+        preview.write_text(
+            "\n".join(f"{m.when:%Y-%m-%d %H:%M} {m.sender}: {m.text}" for m in messages), encoding="utf-8"
+        )
+        print(f"redacted chat written to {preview}; read it before the real run")
+        return
 
     queue = Queue(args.work)
     llm = ollama_llm(args.model)

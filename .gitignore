@@ -7,3 +7,5 @@ inbox/
 work/
 digest/
 results/
+# names and clients to hide are themselves private
+redact-terms.txt

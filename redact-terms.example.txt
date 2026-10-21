@@ -1,0 +1,5 @@
+# One word or phrase per line; matched case-insensitively and replaced with [REDACTED].
+# Copy to redact-terms.txt (git-ignored) and list names, nicknames, clients and employers.
+# Fabricated examples:
+Anna Lee
+Acme Bank

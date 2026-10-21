@@ -46,13 +46,33 @@ Pick a day and read each item beside the quote it came from. Give every item a v
 
 The LINE text export in either layout. Date header: `2026.10.19 Monday` (also `2026/10/19`, `2026-10-19` or `Mon, 19/10/2026`). Messages: `HH:MM<TAB>Sender<TAB>text`, or `HH:MM Sender text` with spaces only. In the space layout nothing marks where the name ends, so names are inferred from the file (names with spaces or emoji work; a one-word name whose lines nearly all start with the same word may pick up that word). Buddhist Era years (2569) are converted. Multi-line messages are joined. Stickers, photos, join/leave lines and call notices are skipped. Checked against one real export (space layout) and fabricated samples; another app version or language may need a change in `nightshift/parse.py`.
 
+## Redaction
+
+A chat export is full of other people's details, so everything is redacted right after parsing, before the model, the `work/` files, the review page or the digest see it. The original text is never written anywhere by this program.
+
+| Replaced with | What |
+|---|---|
+| `[EMAIL]` | `name@domain`, with or without `.com` |
+| `[URL:domain]` | links, keeping only the site name |
+| `[REDACTED]` | words in `redact-terms.txt` (names, clients, employers), case-insensitive |
+| `[PHONE]`, `[NUMBER]` | phone numbers, and any run of 9 or more digits |
+| `[CODE]` | voucher- or token-style words mixing 10+ letters and digits, `XXXX-XXXX-XXXX` keys, and the value after `password`, `code`, `token`, `รหัส` |
+
+```bash
+cp redact-terms.example.txt redact-terms.txt     # git-ignored; list names and clients, one per line
+uv run python run.py inbox/chat.txt --preview work/preview.txt   # writes the redacted chat, no model
+uv run python run.py inbox/chat.txt --anonymise-senders ...      # Person A, Person B, ... (optional)
+```
+
+The run prints how many of each kind it replaced, never the text. **Read the preview before the real run**: this is a safety net, not a guarantee, and it cannot know that a Thai nickname is a person. If a chunk's text changes (for example you add a term), its old result is treated as stale and redone.
+
 ## Tests
 
 ```bash
 uv run pytest
 ```
 
-Covers the parser, chunking, the quote check, the resumable queue (resume, stop time, failures), the digest and the review logic (verdicts, edits, confirm, tally). They use a fake model, so they need no Ollama.
+Covers the parser, redaction, chunking, the quote check, the resumable queue (resume, stop time, failures), the digest and the review logic (verdicts, edits, confirm, tally). They use a fake model, so they need no Ollama.
 
 ## Layout
 
@@ -63,6 +83,7 @@ nightshift/chunk.py    messages -> one chunk per day
 nightshift/summarise.py  Gemma call, JSON items, retries
 nightshift/verify.py   the quote check
 nightshift/queue.py    resumable job queue
+nightshift/redact.py   removes secrets and names before the model sees anything
 nightshift/digest.py   Markdown digest and review file
 nightshift/review.py   verdicts, edits, confirm and the tally (no Gradio)
 app.py                 Gradio review page
@@ -72,7 +93,7 @@ CONTEXT.md             glossary and flagged ambiguities
 
 ## Privacy
 
-Real exports, `work/` and `digest/` are in `.gitignore`. The repository contains only a fabricated demo chat.
+Real exports, `work/`, `digest/` and `redact-terms.txt` are in `.gitignore`. The repository contains only a fabricated demo chat.
 
 ## License
 

@@ -22,8 +22,18 @@ class Queue:
     def _path(self, chunk_id: str) -> Path:
         return self.dir / f"{chunk_id}.json"
 
-    def done(self, chunk_id: str) -> bool:
-        return self._path(chunk_id).exists()
+    def done(self, chunk_id: str, fingerprint: str | None = None) -> bool:
+        """Finished, and (if a fingerprint is given) computed from the same text as now.
+
+        A result made from older text, for example before the redaction settings changed,
+        counts as not done, so the chunk is redone and the old file is overwritten.
+        """
+        path = self._path(chunk_id)
+        if not path.exists():
+            return False
+        if fingerprint is None:
+            return True
+        return json.loads(path.read_text(encoding="utf-8")).get("fingerprint") == fingerprint
 
     def save(self, result: dict) -> None:
         path = self._path(result["id"])
@@ -53,7 +63,7 @@ def run(chunks: list[Chunk], summarise, queue: Queue, *, until: datetime | None 
     report = Report()
     todo = []
     for c in chunks:
-        if queue.done(c.id):
+        if queue.done(c.id, c.fingerprint):
             report.skipped += 1
         else:
             todo.append(c)
@@ -76,6 +86,7 @@ def run(chunks: list[Chunk], summarise, queue: Queue, *, until: datetime | None 
             log(f"FAILED {c.id}: {e}")
             continue
         consecutive = 0
+        result.setdefault("fingerprint", c.fingerprint)
         queue.save(result)
         report.done += 1
         log(f"done {c.id}: {len(result['items'])} items, {len(result['dropped'])} dropped, {result['seconds']}s")
